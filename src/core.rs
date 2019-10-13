@@ -1,5 +1,6 @@
 use base64;
 use regex::Regex;
+use reqwest;
 use serde::{Deserialize, Serialize};
 
 /*
@@ -8,14 +9,14 @@ from https://github.com/2dust/v2rayN/blob/master/v2rayN/v2rayN/Mode/VmessQRCode.
 */
 
 lazy_static! {
-    static ref URL_MATCHER: Regex = Regex::new(r#"vmess://.*"#).unwrap();
+    static ref VMESS_URL_MATCHER: Regex = Regex::new(r#"vmess://.*"#).unwrap();
     pub static ref DEFAULT_CONVERT_CFG: ConvertConfig = ConvertConfig {
         group: "V2NtoQuan".to_string(),
         method: "chacha20-ietf-poly1305".to_string(),
     };
 }
 
-#[derive(FromForm)]
+#[derive(Clone, FromForm)]
 pub struct ConvertConfig {
     pub group: String,
     pub method: String,
@@ -87,6 +88,22 @@ pub fn convert_vmess_uri(ins: &str, convert_cfg: &ConvertConfig) -> String {
     let serialized: String = String::from_utf8(base64::decode(&ins[start..]).unwrap()).unwrap();
     let deserialized: VmessConfig = serde_json::from_str(&serialized).unwrap();
     deserialized.to_quan_uri(convert_cfg)
+}
+
+pub fn read_cfg_url(url: &str) -> Result<String, reqwest::Error> {
+    reqwest::get(url)?.text()
+}
+
+pub fn convert_cfg_str(cfg_str: &str, convert_cfg: &ConvertConfig) -> String {
+    let mut buffer = String::new();
+    for line in cfg_str.lines() {
+        if VMESS_URL_MATCHER.is_match(line) {
+            buffer.push_str(&format!("{}\n", convert_vmess_uri(line, convert_cfg)));
+        } else {
+            buffer.push_str(line);
+        }
+    }
+    buffer
 }
 
 #[cfg(test)]

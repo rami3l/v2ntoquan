@@ -13,5 +13,7 @@ mod routes;
 use routes::*;
 
 fn main() {
-    rocket::ignite().mount("/", routes![index,]).launch();
+    rocket::ignite()
+        .mount("/", routes![index, v2rayn_to_quan,])
+        .launch();
 }
