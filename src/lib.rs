@@ -1,7 +1,8 @@
-use base64;
 use regex::Regex;
-use reqwest;
 use serde::{Deserialize, Serialize};
+
+#[macro_use]
+extern crate lazy_static;
 
 /*
 V2rayN Vmess URI format:
@@ -16,7 +17,7 @@ lazy_static! {
     };
 }
 
-#[derive(Clone, FromForm)]
+#[derive(Clone)]
 pub struct ConvertConfig {
     pub group: String,
     pub method: String,
@@ -88,10 +89,6 @@ pub fn convert_vmess_uri(ins: &str, convert_cfg: &ConvertConfig) -> String {
     let serialized: String = String::from_utf8(base64::decode(&ins[start..]).unwrap()).unwrap();
     let deserialized: VmessConfig = serde_json::from_str(&serialized).unwrap();
     deserialized.to_quan_uri(convert_cfg)
-}
-
-pub fn read_cfg_url(url: &str) -> Result<String, reqwest::Error> {
-    reqwest::get(url)?.text()
 }
 
 pub fn convert_cfg_str(cfg_str: &str, convert_cfg: &ConvertConfig) -> String {
