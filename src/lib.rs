@@ -24,7 +24,7 @@ pub struct ConvertConfig {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct VmessConfig {
+struct VmessConfig {
     v: String,      // version
     ps: String,     // remark
     add: String,    // remote server address
@@ -39,7 +39,7 @@ pub struct VmessConfig {
 }
 
 impl VmessConfig {
-    pub fn to_quan_uri(&self, convert_cfg: &ConvertConfig) -> String {
+    fn to_quan_uri(&self, convert_cfg: &ConvertConfig) -> String {
         let ua="Mozilla/5.0 (iPhone; CPU iPhone OS 11_2_6 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) Mobile/15D100";
         let obfs = format!(
             ", obfs={net}, obfs-path=\"{path}\", obfs-header=\"Host: {host}[Rr][Nn]User-Agent: {ua}\"",
@@ -101,6 +101,13 @@ pub fn convert_cfg_str(cfg_str: &str, convert_cfg: &ConvertConfig) -> String {
         }
     }
     buffer
+}
+
+pub fn v2rayn_to_quan(v2rayn_link: &str, config: Option<ConvertConfig>) -> String {
+    match config {
+        Some(cfg) => convert_cfg_str(&v2rayn_link, &cfg),
+        None => convert_cfg_str(&v2rayn_link, &DEFAULT_CONVERT_CFG),
+    }
 }
 
 #[cfg(test)]
